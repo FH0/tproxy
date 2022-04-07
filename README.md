@@ -1,2 +1,2 @@
 # tproxy
-golang TPROXY library, support ipv4 and ipv6, support tcp and udp
+Golang TPROXY and REDIRECT library, support IPv4 and IPv6, support TCP and UDP. (REDIRECT not support UDP)
