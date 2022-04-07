@@ -168,10 +168,14 @@ func (u *UDPListener) LocalAddr() net.Addr {
 }
 
 // ListenUDP like net package
-func ListenUDP(port uint16) (udpListener *UDPListener, err error) {
+func ListenUDP(addr string) (udpListener *UDPListener, err error) {
 	udpListener = &UDPListener{}
 
-	udpListener.listener, err = net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv6zero, Port: int(port)})
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
+	if err != nil {
+		return
+	}
+	udpListener.listener, err = net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		return
 	}
@@ -182,22 +186,28 @@ func ListenUDP(port uint16) (udpListener *UDPListener, err error) {
 		return
 	}
 	fd := int(file.Fd())
-	err = syscall.SetsockoptInt(fd, syscall.SOL_IP, unix.IP_TRANSPARENT, 1)
-	if err != nil {
-		return
+	if udpListener.listener.LocalAddr().(*net.UDPAddr).AddrPort().Addr().Is4() ||
+		udpListener.listener.LocalAddr().(*net.UDPAddr).AddrPort().Addr() == netip.MustParseAddr("::") {
+		err = syscall.SetsockoptInt(fd, syscall.SOL_IP, unix.IP_TRANSPARENT, 1)
+		if err != nil {
+			return
+		}
+		err = syscall.SetsockoptInt(fd, syscall.SOL_IP, unix.IP_RECVORIGDSTADDR, 1)
+		if err != nil {
+			return
+		}
 	}
-	err = syscall.SetsockoptInt(fd, syscall.SOL_IP, unix.IP_RECVORIGDSTADDR, 1)
-	if err != nil {
-		return
+	if udpListener.listener.LocalAddr().(*net.UDPAddr).AddrPort().Addr().Is6() {
+		err = syscall.SetsockoptInt(fd, syscall.SOL_IPV6, unix.IPV6_TRANSPARENT, 1)
+		if err != nil {
+			return
+		}
+		err = syscall.SetsockoptInt(fd, syscall.SOL_IPV6, unix.IPV6_RECVORIGDSTADDR, 1)
+		if err != nil {
+			return
+		}
 	}
-	err = syscall.SetsockoptInt(fd, syscall.SOL_IPV6, unix.IPV6_TRANSPARENT, 1)
-	if err != nil {
-		return
-	}
-	err = syscall.SetsockoptInt(fd, syscall.SOL_IPV6, unix.IPV6_RECVORIGDSTADDR, 1)
-	if err != nil {
-		return
-	}
+
 	err = file.Close()
 	if err != nil {
 		return

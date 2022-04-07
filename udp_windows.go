@@ -34,9 +34,13 @@ func (u *UDPListener) LocalAddr() net.Addr {
 }
 
 // ListenUDP like net package
-func ListenUDP(port uint16) (udpListener *UDPListener, err error) {
+func ListenUDP(addr string) (udpListener *UDPListener, err error) {
 	udpListener = &UDPListener{}
-	udpListener.listener, err = net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv6zero, Port: int(port)})
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
+	if err != nil {
+		return
+	}
+	udpListener.listener, err = net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		return
 	}

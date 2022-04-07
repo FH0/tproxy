@@ -15,11 +15,11 @@ var (
 
 func init() {
 	var err error
-	tListener, err = tproxy.ListenTCP(54321)
+	tListener, err = tproxy.ListenTCP("[::]:54321")
 	if err != nil {
 		panic(err)
 	}
-	uListener, err = tproxy.ListenUDP(54321)
+	uListener, err = tproxy.ListenUDP("[::]:54321")
 	if err != nil {
 		panic(err)
 	}

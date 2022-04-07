@@ -2,10 +2,9 @@ package tproxy
 
 import (
 	"net"
-	"strconv"
 )
 
 // ListenTCP address is [::], dual stack
-func ListenTCP(port uint16) (net.Listener, error) {
-	return net.Listen("tcp", "[::]:"+strconv.Itoa(int(port)))
+func ListenTCP(addr string) (net.Listener, error) {
+	return net.Listen("tcp", addr)
 }

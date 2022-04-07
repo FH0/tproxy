@@ -3,7 +3,6 @@ package tproxy
 import (
 	"encoding/binary"
 	"net"
-	"strconv"
 	"syscall"
 
 	"golang.org/x/sys/unix"
@@ -68,10 +67,10 @@ func (t *tcpListener) Accept() (net.Conn, error) {
 }
 
 // ListenTCP address is [::], dual stack
-func ListenTCP(port uint16) (_ net.Listener, err error) {
+func ListenTCP(addr string) (_ net.Listener, err error) {
 	listener := &tcpListener{}
 
-	listener.Listener, err = net.Listen("tcp", "[::]:"+strconv.Itoa(int(port)))
+	listener.Listener, err = net.Listen("tcp", addr)
 	if err != nil {
 		return
 	}
